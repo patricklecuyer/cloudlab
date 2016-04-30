@@ -11,32 +11,32 @@ resource "aws_vpc" "cloud-lab" {
 
 # Create an internet gateway to give our subnet access to the outside world
 resource "aws_internet_gateway" "default" {
-  vpc_id = "${aws_vpc.default.id}"
+  vpc_id = "${aws_vpc.cloud-lab.id}"
   enable_dns_hostnames = true
 }
 
 # Grant the VPC internet access on its main route table
 resource "aws_route" "internet_access" {
-  route_table_id         = "${aws_vpc.default.main_route_table_id}"
+  route_table_id         = "${aws_vpc.cloud-lab.main_route_table_id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.default.id}"
 }
 
 # Create a subnets for different type of resources
 resource "aws_subnet" "frontend" {
-  vpc_id                  = "${aws_vpc.default.id}"
+  vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "backend" {
-  vpc_id                  = "${aws_vpc.default.id}"
+  vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = false
 }
 
 resource "aws_subnet" "admin" {
-  vpc_id                  = "${aws_vpc.default.id}"
+  vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = false
 }
@@ -45,7 +45,7 @@ resource "aws_subnet" "admin" {
 resource "aws_security_group" "elb" {
   name        = "cloudlab_elb"
   description = "ELB for the web app"
-  vpc_id      = "${aws_vpc.default.id}"
+  vpc_id      = "${aws_vpc.cloud-lab.id}"
 
   # HTTP access from anywhere
   ingress {
@@ -69,7 +69,7 @@ resource "aws_security_group" "elb" {
 resource "aws_security_group" "default" {
   name        = "default security group"
   description = "basic default security group"
-  vpc_id      = "${aws_vpc.default.id}"
+  vpc_id      = "${aws_vpc.cloud-lab.id}"
 
   # SSH access from anywhere
   ingress {
