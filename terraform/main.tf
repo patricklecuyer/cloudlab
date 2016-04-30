@@ -6,15 +6,14 @@ provider "aws" {
 # Create a VPC to launch our instances into
 resource "aws_vpc" "cloud-lab" {
   cidr_block = "10.0.0.0/16"
-
+  enable_dns_hostnames = true
 }
 
 # Create an internet gateway to give our subnet access to the outside world
 resource "aws_internet_gateway" "default" {
   vpc_id = "${aws_vpc.cloud-lab.id}"
-  enable_dns_hostnames = true
-}
 
+}
 # Grant the VPC internet access on its main route table
 resource "aws_route" "internet_access" {
   route_table_id         = "${aws_vpc.cloud-lab.main_route_table_id}"
@@ -37,7 +36,7 @@ resource "aws_subnet" "backend" {
 
 resource "aws_subnet" "admin" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
-  cidr_block              = "10.0.2.0/24"
+  cidr_block              = "10.0.3.0/24"
   map_public_ip_on_launch = false
 }
 
@@ -106,7 +105,7 @@ resource "aws_security_group" "default" {
 
 
 resource "aws_elb" "web" {
-  name = "Web ELB"
+  name = "cloudlab-elb-${var.hostname}"
 
   subnets         = ["${aws_subnet.frontend.id}"]
   security_groups = ["${aws_security_group.elb.id}"]
@@ -126,10 +125,35 @@ resource "aws_key_pair" "auth" {
   public_key = "${file(var.public_key_path)}"
 }
 
-resource "aws_instance" "web" {
+resource "aws_instance" "jump" {
     connection {
       user = "ec2user"
 
+  }
+
+  instance_type = "t2.small"
+
+  ami = "ami-08111162"
+
+  key_name = "${aws_key_pair.auth.id}"
+
+  vpc_security_group_ids = ["${aws_security_group.default.id}"]
+
+
+  subnet_id = "${aws_subnet.frontend.id}"
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get -y update",
+    ]
+  }
+}
+
+
+resource "aws_instance" "web" {
+    connection {
+      user = "ec2user"
+      bastion_host = "${aws_instance.jump.public_ip}"
   }
 
   instance_type = "t2.small"
