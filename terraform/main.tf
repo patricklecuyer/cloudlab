@@ -152,7 +152,7 @@ resource "aws_instance" "jump" {
 
 resource "aws_instance" "web" {
     connection {
-      user = "ec2user"
+      user = "ec2-user"
       bastion_host = "${aws_instance.jump.public_ip}"
   }
 
