@@ -9,16 +9,26 @@ resource "aws_vpc" "cloud-lab" {
   enable_dns_hostnames = true
 }
 
+resource "aws_eip" "nat" {
+  vpc = true
+}
+
 # Create an internet gateway to give our subnet access to the outside world
 resource "aws_internet_gateway" "default" {
   vpc_id = "${aws_vpc.cloud-lab.id}"
-
 }
+
 # Grant the VPC internet access on its main route table
-resource "aws_route" "internet_access" {
+resource "aws_route" "direct_internet_access" {
   route_table_id         = "${aws_vpc.cloud-lab.main_route_table_id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.default.id}"
+  nat_gateway_id = "${aws_nat_gateway.gw.id}"
+}
+
+resource "aws_nat_gateway" "gw" {
+    allocation_id = "${aws_eip.nat.id}"
+    subnet_id = "${aws_subnet.frontend.id}"
 }
 
 # Create a subnets for different type of resources
@@ -27,6 +37,7 @@ resource "aws_subnet" "frontend" {
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
 }
+
 
 resource "aws_subnet" "backend" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
@@ -39,6 +50,8 @@ resource "aws_subnet" "admin" {
   cidr_block              = "10.0.3.0/24"
   map_public_ip_on_launch = false
 }
+
+
 
 # A security group for the ELB so it is accessible via the web
 resource "aws_security_group" "elb" {
@@ -127,8 +140,8 @@ resource "aws_key_pair" "auth" {
 
 resource "aws_instance" "jump" {
     connection {
-      user = "ec2user"
-
+      user = "ec2-user"
+      private_key = "~/.ssh/id_rsa"
   }
 
   instance_type = "t2.small"
@@ -144,7 +157,7 @@ resource "aws_instance" "jump" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo apt-get -y update",
+      "sudo yum -y update",
     ]
   }
 }
@@ -154,6 +167,7 @@ resource "aws_instance" "web" {
     connection {
       user = "ec2-user"
       bastion_host = "${aws_instance.jump.public_ip}"
+      private_key = "${file("~/.ssh/id_rsa")}"
   }
 
   instance_type = "t2.small"
@@ -169,8 +183,8 @@ resource "aws_instance" "web" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo apt-get -y update",
-      "sudo apt-get -y install nginx",
+      "sudo yum -y update",
+      "sudo yum -y install nginx",
       "sudo service nginx start"
     ]
   }
