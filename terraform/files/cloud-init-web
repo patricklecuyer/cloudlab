@@ -1,0 +1,21 @@
+#cloud-config
+
+package_upgrade: true
+
+packages:
+  - epel-release
+
+yum_repos:
+  saltstack:
+  name: SaltStack repo for Red Hat Enterprise Linux $releasever
+  baseurl: https://repo.saltstack.com/yum/redhat/$releasever/$basearch/latest
+  enabled: true
+  gpgcheck: false
+
+packages:
+  - salt-minion
+  - pip
+  - libgit2
+
+bootcmd:
+  - pip install pygit2

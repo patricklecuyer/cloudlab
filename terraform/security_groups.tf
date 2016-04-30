@@ -21,6 +21,28 @@ resource "aws_security_group" "elb" {
   }
 }
 
+resource "aws_security_group" "admin" {
+  name        = "Security group for admin machine"
+  description = "Saltstack master security group"
+  vpc_id      = "${aws_vpc.cloud-lab.id}"
+
+  # SSH access from anywhere
+  ingress {
+    from_port   = 4505
+    to_port     = 4505
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  ingress {
+    from_port   = 4506
+    to_port     = 4506
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+}
+
+
 # Our default security group to access
 # the instances over SSH and HTTP
 resource "aws_security_group" "default" {

@@ -1,5 +1,5 @@
 
-#Temporary certificate to initialize the ELB.  Let's Encrypt will replace once admin machine is up
+#Temporary certificate to initialize the ELB. Lambda job will replace with Let's Encrypt
 resource "aws_iam_server_certificate" "temp_cert" {
   name = "temp_cert"
   certificate_body = "${file("files/server.crt")}"
@@ -11,13 +11,13 @@ resource "aws_elb" "web" {
 
   subnets         = ["${aws_subnet.frontend.id}"]
   security_groups = ["${aws_security_group.elb.id}"]
-  instances       = ["${aws_instance.web.id}"]
 
   listener {
     instance_port     = 80
     instance_protocol = "http"
     lb_port           = 443
     lb_protocol       = "https"
+    ssl_certificate_id = "${aws_iam_server_certificate.temp_cert.id}"
   }
 
 }
@@ -65,10 +65,16 @@ resource "aws_instance" "admin" {
 
   key_name = "${aws_key_pair.auth.id}"
 
-  vpc_security_group_ids = ["${aws_security_group.default.id}"]
+  vpc_security_group_ids = ["${aws_security_group.default.id}", "${aws_security_group.admin.id}"]
 
 
   subnet_id = "${aws_subnet.admin.id}"
+
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir /tmp/saltconf"
+    ]
+  }
 
   provisioner "file" {
     source = "files/salt-master.conf"
@@ -81,35 +87,10 @@ resource "aws_instance" "admin" {
       "sudo yum -y install epel-release",
       "sudo yum -y install pip libgit2",
       "pip install pygit2",
-      "curl -o bootstrap_salt.sh -L https://bootstrap.saltstack.com",
-      "sudo sh bootstrap_salt.sh -M -c /tmp/saltconf git stable"
-    ]
-  }
-}
-
-resource "aws_instance" "web" {
-    connection {
-      user = "ec2-user"
-      bastion_host = "${aws_instance.jump.public_ip}"
-      private_key = "${file("~/.ssh/id_rsa")}"
-  }
-
-  instance_type = "t2.small"
-
-  ami = "ami-08111162"
-
-  key_name = "${aws_key_pair.auth.id}"
-
-  vpc_security_group_ids = ["${aws_security_group.default.id}"]
-
-
-  subnet_id = "${aws_subnet.backend.id}"
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum -y update",
-      "sudo yum -y install nginx",
-      "sudo service nginx start"
+      "sudo yum -y install https://repo.saltstack.com/yum/amazon/salt-amzn-repo-2015.8-1.ami.noarch.rpm",
+      "sudo yum -y install salt-master",
+      "sudo cp /tmp/saltconf/master /etc/salt/master",
+      "sudo /etc/init.d/salt-master start"
     ]
   }
 }
