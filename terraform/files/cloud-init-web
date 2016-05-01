@@ -20,5 +20,5 @@ yum_repos:
 packages:
   - salt-minion
 
-bootcmd:
+runcmd:
   - sudo /etc/init.d/salt-minion start
