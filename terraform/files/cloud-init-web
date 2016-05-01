@@ -19,3 +19,4 @@ packages:
 
 bootcmd:
   - pip install pygit2
+  - sudo /etc/init.d/salt-minion start
