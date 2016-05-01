@@ -1,12 +1,11 @@
 #cloud-config
 
-
 package_upgrade: true
 
 yum_repos:
   saltstack:
     name: SaltStack repo for Amazon Linux $releasever
-    baseurl: https://repo.saltstack.com/yum/redhat/6/$basearch/latest
+    baseurl: https://repo.saltstack.com/yum/redhat/7/$basearch/latest
     enabled: true
     gpgcheck: false
 

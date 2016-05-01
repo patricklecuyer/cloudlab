@@ -35,7 +35,7 @@ resource "aws_instance" "jump" {
 
   instance_type = "t2.micro"
 
-  ami = "ami-08111162"
+  ami = "ami-6d1c2007"
 
   key_name = "${aws_key_pair.auth.id}"
 
@@ -61,7 +61,7 @@ resource "aws_instance" "admin" {
 
   instance_type = "t2.small"
 
-  ami = "ami-08111162"
+  ami = "ami-6d1c2007"
 
   key_name = "${aws_key_pair.auth.id}"
 
@@ -87,7 +87,7 @@ resource "aws_instance" "admin" {
       "sudo yum -y install epel-release",
       "sudo yum -y install pip libgit2",
       "pip install pygit2",
-      "sudo yum -y install https://repo.saltstack.com/yum/amazon/salt-amzn-repo-2015.8-1.ami.noarch.rpm",
+      "sudo yum install https://repo.saltstack.com/yum/redhat/salt-repo-2015.8-2.el7.noarch.rpm",
       "sudo yum -y install salt-master",
       "sudo cp /tmp/saltconf/master /etc/salt/master",
       "sudo /etc/init.d/salt-master start"
@@ -97,7 +97,7 @@ resource "aws_instance" "admin" {
 
 
 resource "aws_launch_configuration" "web" {
-    image_id = "ami-08111162"
+    image_id = "ami-6d1c2007"
     instance_type = "t2.micro"
     name_prefix = "cloud-lab-web-${var.hostname}-"
     user_data = "${file(\"files/cloud-init-web\")}"
@@ -117,7 +117,7 @@ resource "aws_autoscaling_group" "web" {
   load_balancers = ["${aws_elb.web.name}"]
   launch_configuration = "${aws_launch_configuration.web.name}"
   vpc_zone_identifier = ["${aws_subnet.backend-a.id}", "${aws_subnet.backend-b.id}", "${aws_subnet.backend-c.id}"]
-  depends_on = ["${aws_instance.jump}"]
+  #depends_on = ["${aws_instance.jump}"]
 }
 
 resource "aws_autoscaling_policy" "web-scaleup" {
