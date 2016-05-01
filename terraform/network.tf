@@ -19,38 +19,26 @@ resource "aws_internet_gateway" "default" {
 resource "aws_route" "direct_internet_access" {
   route_table_id         = "${aws_vpc.cloud-lab.main_route_table_id}"
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = "${aws_internet_gateway.default.id}"
+  gateway_id             = "${aws_nat_gateway.gw.id}"
 }
 
-resource "aws_route_table" "nat" {
+resource "aws_route_table" "direct" {
     vpc_id = "${aws_vpc.cloud-lab.id}"
     route {
         cidr_block = "0.0.0.0/0"
-        gateway_id = "${aws_nat_gateway.gw.id}"
+        gateway_id = "${aws_internet_gateway.default.id}"
     }
 }
 
-resource "aws_route_table_association" "backend-a" {
-    subnet_id = "${aws_subnet.backend-a.id}"
-    route_table_id = "${aws_route_table.nat.id}"
-}
-
-resource "aws_route_table_association" "backend-b" {
-    subnet_id = "${aws_subnet.backend-b.id}"
-    route_table_id = "${aws_route_table.nat.id}"
-}
-resource "aws_route_table_association" "backend-c" {
-    subnet_id = "${aws_subnet.backend-c.id}"
-    route_table_id = "${aws_route_table.nat.id}"
-}
-resource "aws_route_table_association" "admin" {
-    subnet_id = "${aws_subnet.admin.id}"
-    route_table_id = "${aws_route_table.nat.id}"
+resource "aws_route_table_association" "direct" {
+    subnet_id = "${aws_subnet.frontend.id}"
+    route_table_id = "${aws_route_table.direct.id}"
 }
 
 resource "aws_nat_gateway" "gw" {
     allocation_id = "${aws_eip.nat.id}"
     subnet_id = "${aws_subnet.frontend.id}"
+  #  depends_on = ["${aws_internet_gateway.default}"]
 }
 
 # Create a subnets for different type of resources
@@ -65,21 +53,27 @@ resource "aws_subnet" "backend-a" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = false
+
 }
+
 
 resource "aws_subnet" "backend-b" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.3.0/24"
   map_public_ip_on_launch = false
+
 }
 
 resource "aws_subnet" "backend-c" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.4.0/24"
   map_public_ip_on_launch = false
+
 }
+
 resource "aws_subnet" "admin" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.200.0/24"
   map_public_ip_on_launch = false
+
 }

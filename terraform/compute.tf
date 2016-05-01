@@ -117,7 +117,7 @@ resource "aws_autoscaling_group" "web" {
   load_balancers = ["${aws_elb.web.name}"]
   launch_configuration = "${aws_launch_configuration.web.name}"
   vpc_zone_identifier = ["${aws_subnet.backend-a.id}", "${aws_subnet.backend-b.id}", "${aws_subnet.backend-c.id}"]
-
+  depends_on = ["${aws_instance.jump}"]
 }
 
 resource "aws_autoscaling_policy" "web-scaleup" {
