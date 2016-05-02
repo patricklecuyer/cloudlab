@@ -87,7 +87,7 @@ resource "aws_instance" "admin" {
       "sudo yum -y install epel-release",
       "sudo yum -y install pip libgit2",
       "pip install pygit2",
-      "sudo yum install https://repo.saltstack.com/yum/redhat/salt-repo-2015.8-2.el7.noarch.rpm",
+      "sudo yum -y install https://repo.saltstack.com/yum/redhat/salt-repo-2015.8-2.el7.noarch.rpm",
       "sudo yum -y install salt-master",
       "sudo cp /tmp/saltconf/master /etc/salt/master",
       "sudo /etc/init.d/salt-master start"
@@ -166,4 +166,16 @@ resource "aws_cloudwatch_metric_alarm" "web-scaledown" {
     }
     alarm_description = "This metric monitor ec2 cpu utilization for scale down"
     alarm_actions = ["${aws_autoscaling_policy.web-scaledown.arn}"]
+}
+
+resource "aws_db_instance" "database" {
+  allocated_storage    = 10
+  engine               = "mysql"
+  instance_class       = "db.t1.micro"
+  name                 = "mydb"
+  username             = "admin"
+  password             = "admin"
+  db_subnet_group_name = "${aws_subnet.database.id}"
+  parameter_group_name = "default.mysql5.6"
+  vpc_security_group_ids = ["${aws_security_group.default.id}", "${aws_security_group.rds.id}"]
 }

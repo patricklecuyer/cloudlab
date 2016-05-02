@@ -71,6 +71,13 @@ resource "aws_subnet" "backend-c" {
 
 }
 
+resource "aws_subnet" "database" {
+  vpc_id                  = "${aws_vpc.cloud-lab.id}"
+  cidr_block              = "10.0.5.0/24"
+  map_public_ip_on_launch = false
+
+}
+
 resource "aws_subnet" "admin" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.200.0/24"

@@ -82,3 +82,20 @@ resource "aws_security_group" "default" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+
+# Our default security group to access
+# the instances over SSH and HTTP
+resource "aws_security_group" "rds" {
+  name        = "rds security group"
+  description = "basic rds security group"
+  vpc_id      = "${aws_vpc.cloud-lab.id}"
+
+  # HTTP access from the VPC
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+}
