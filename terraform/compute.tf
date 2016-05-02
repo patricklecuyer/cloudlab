@@ -35,7 +35,7 @@ resource "aws_instance" "jump" {
 
   instance_type = "t2.micro"
 
-  ami = "ami-6d1c2007"
+  ami = "ami-08111162"
 
   key_name = "${aws_key_pair.auth.id}"
 
@@ -61,7 +61,7 @@ resource "aws_instance" "admin" {
 
   instance_type = "t2.small"
 
-  ami = "ami-6d1c2007"
+  ami = "ami-08111162"
 
   key_name = "${aws_key_pair.auth.id}"
 
@@ -97,7 +97,7 @@ resource "aws_instance" "admin" {
 
 
 resource "aws_launch_configuration" "web" {
-    image_id = "ami-6d1c2007"
+    image_id = "ami-08111162"
     instance_type = "t2.micro"
     name_prefix = "cloud-lab-web-${var.hostname}-"
     user_data = "${file(\"files/cloud-init-web\")}"
