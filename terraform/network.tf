@@ -71,16 +71,29 @@ resource "aws_subnet" "backend-c" {
 
 }
 
-resource "aws_subnet" "database" {
+resource "aws_subnet" "database-a" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
-  cidr_block              = "10.0.5.0/24"
+  cidr_block              = "10.0.10.0/24"
   map_public_ip_on_launch = false
-
 }
 
+resource "aws_subnet" "database-b" {
+  vpc_id                  = "${aws_vpc.cloud-lab.id}"
+  cidr_block              = "10.0.11.0/24"
+  map_public_ip_on_launch = false
+}
 resource "aws_subnet" "admin" {
   vpc_id                  = "${aws_vpc.cloud-lab.id}"
   cidr_block              = "10.0.200.0/24"
   map_public_ip_on_launch = false
 
 }
+
+resource "aws_db_subnet_group" "default" {
+    name = "main"
+    description = "Our main group of subnets"
+    subnet_ids = ["${aws_subnet.database-a.id}", "${aws_subnet.database-b.id}"]
+    tags {
+        Name = "My DB subnet group"
+    }
+  }

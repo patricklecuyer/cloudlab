@@ -174,8 +174,8 @@ resource "aws_db_instance" "database" {
   instance_class       = "db.t1.micro"
   name                 = "mydb"
   username             = "admin"
-  password             = "admin"
-  db_subnet_group_name = "${aws_subnet.database.id}"
+  password             = "admin123456"
+  db_subnet_group_name = "${aws_db_subnet_group.default.id}"
   parameter_group_name = "default.mysql5.6"
-  vpc_security_group_ids = ["${aws_security_group.default.id}", "${aws_security_group.rds.id}"]
+  vpc_security_group_ids = ["${aws_security_group.rds.id}"]
 }
