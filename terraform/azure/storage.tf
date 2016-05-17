@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "cloudlab-storage" {
-    name = "cloudlab"
+    name = "patricklecuyercloudlab2"
     resource_group_name = "${azurerm_resource_group.rg.name}"
     location = "eastus"
     account_type = "Standard_LRS"

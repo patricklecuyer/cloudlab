@@ -1,4 +1,4 @@
 variable "envname" {
   description = "Environment Nae"
-  default = "cloudlab"
+  default = "cloudlab2"
 }
