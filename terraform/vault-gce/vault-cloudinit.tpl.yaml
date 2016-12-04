@@ -1,0 +1,44 @@
+#cloud-config
+coreos:
+  units:
+    - name: format-vault.service
+      command: start
+      content: |
+        [Unit]
+        Description=Formats the DB drive
+        ConditionFirstBoot=yes
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/sbin/wipefs -f /dev/sdb
+        ExecStart=/usr/sbin/mkfs.ext4 -F /dev/sdb
+    - name: var-vault.mount
+      command: start
+      content: |
+        [Unit]
+        After=format-vault.service
+        [Mount]
+        What=/dev/sdb
+        Where=/var/vault
+        Type=ext4
+    - name: vault.service
+      command: start
+      content: |
+        [Unit]
+        Description=Vault Service
+        After=docker.service var-vaultdb.mount docker.service letsencrypt.service
+        Requires=docker.service letsencrypt.service
+        [Service]
+        ExecStart=/usr/bin/docker run --cap-add=IPC_LOCK -p 8200:8200 -v /var/vault:/var/vault -v /etc/letsencrypt/:/etc/letsencrypt -e 'VAULT_LOCAL_CONFIG={"backend": {"file": {"path": "/var/vault/db"}}, "listener": {"tcp": {"address": "0.0.0.0:8200", "tls_cert_file": "/etc/letsencrypt/live/${hostname}/cert.pem","tls_key_file": "/etc/letsencrypt/live/${hostname}/privkey.pem" }}, "default_lease_ttl": "168h", "max_lease_ttl": "720h"}' vault server
+        ExecStop=/usr/bin/docker stop vault
+    - name: letsencrypt.service
+      command: start
+      content: |
+        [Unit]
+        Description=letsencrypt Service
+        After=docker.service
+        Requires=docker.service
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/docker run --rm -p 80:80 --name certbot -v "/etc/letsencrypt:/etc/letsencrypt" -v "/var/lib/letsencrypt:/var/lib/letsencrypt" quay.io/letsencrypt/letsencrypt:latest certonly --standalone --standalone-supported-challenges http-01 -d ${hostname} -m ${email} --agree-tos
