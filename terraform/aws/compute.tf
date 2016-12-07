@@ -100,9 +100,16 @@ resource "aws_launch_configuration" "web" {
     image_id = "ami-08111162"
     instance_type = "t2.micro"
     name_prefix = "cloud-lab-web-${var.hostname}-"
+<<<<<<< HEAD
     user_data = "${file("files/cloud-init-web")}"
     security_groups = ["${aws_security_group.default.id}"]
     key_name = "${aws_key_pair.auth.id}"
+=======
+    #user_data = "${file(\"files/cloud-init-web\")}"
+    security_groups = ["${aws_security_group.default.id}"]
+    key_name = "${aws_key_pair.auth.id}"
+
+>>>>>>> d9a4dc33696fc9ded07e154fdea9aa9464294fc3
 }
 
 resource "aws_autoscaling_group" "web" {
