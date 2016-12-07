@@ -1,6 +1,6 @@
 variable "public_key_path" {
   description = "Public SSH Keypath"
-  default = "~/.ssh/id_rsa.pub"
+  default = "/Users/plecuyer/.ssh/id_rsa.pub"
 }
 
 variable "hostname" {

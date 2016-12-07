@@ -30,7 +30,7 @@ resource "aws_key_pair" "auth" {
 resource "aws_instance" "jump" {
     connection {
       user = "ec2-user"
-      private_key = "~/.ssh/id_rsa"
+      private_key = "/Users/plecuyer/.ssh/id_rsa"
   }
 
   instance_type = "t2.micro"
@@ -54,7 +54,7 @@ resource "aws_instance" "jump" {
 resource "aws_instance" "admin" {
     connection {
       user = "ec2-user"
-      private_key = "~/.ssh/id_rsa"
+      private_key = "/Users/plecuyer/.ssh/id_rsa"
       bastion_host = "${aws_instance.jump.public_ip}"
       private_key = "${file("~/.ssh/id_rsa")}"
   }
@@ -100,11 +100,9 @@ resource "aws_launch_configuration" "web" {
     image_id = "ami-08111162"
     instance_type = "t2.micro"
     name_prefix = "cloud-lab-web-${var.hostname}-"
-    user_data = "${file(\"files/cloud-init-web\")}"
+    user_data = "${file("files/cloud-init-web")}"
     security_groups = ["${aws_security_group.default.id}"]
     key_name = "${aws_key_pair.auth.id}"
-
-
 }
 
 resource "aws_autoscaling_group" "web" {
